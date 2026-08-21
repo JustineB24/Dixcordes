@@ -1,6 +1,6 @@
 const httpServer = require('http').createServer();
 const { Server } = require('socket.io');
-const { sequelize, Chat } = require('./config/database');
+const { sequelize, chatModel } = require('./config/database');
 
 const PORT = 3000;
 const io = new Server(httpServer, {
@@ -24,7 +24,7 @@ async function startDatabaseConnection() {
     }
 }
 
-//startDatabaseConnection();
+startDatabaseConnection();
 
 let connectedUsers = new Map();
 connectedUsers.set('general', []);
@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
         // Récupérer l'historique des messages du salon depuis la base de données et l'envoyer au client
         io.to(room).emit('onlineUsers', connectedUsers.get(room));
 
-        /*Chat.findAll({
+        chatModel.findAll({
             where: { room },
             order: [['createdAt', 'ASC']]
         })
@@ -85,7 +85,7 @@ io.on('connection', (socket) => {
             })
             .catch(error => {
                 console.error('Error fetching chat history:', error);
-            });*/
+            });
 
         console.log(`Client ${socket.id} joined room: ${room}`);
     });
@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
         io.to(data.room).emit('chatMessage', messageData);
 
         // Sauvegarder le message dans la base de données
-        /*Chat.create({
+        chatModel.create({
             pseudo: messageData.pseudo,
             message: messageData.message,
             room: messageData.room,
@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
             })
             .catch((error) => {
                 console.error('Error saving message to database:', error);
-            });*/
+            });
 
         console.log(`Message from ${data.pseudo} in room ${data.room}: ${data.message}`);
     });

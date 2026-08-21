@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
 import { useUser } from "../context/userContext.jsx";
@@ -6,7 +6,7 @@ import logo from "../assets/logo_dixcordes.png";
 import ChatMessage from "../components/chatMessageCard";
 
 // Socket gestion
-const socket = io('http://192.168.1.197:3000', {
+const socket = io('http://localhost:3000', {
     transports: ['websocket']
 });
 
@@ -14,6 +14,11 @@ function Chat() {
     const { pseudo, setPseudo, room, setRoom } = useUser();
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [messages, setMessages] = useState([]);
+    const [inputMessage, setInputMessage] = useState(""); const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     useEffect(() => {
         if (!pseudo || !room) return;
@@ -21,24 +26,50 @@ function Chat() {
         // Rejoindre le salon
         socket.emit('joinRoom', { room, pseudo });
 
-        // Liste des utilisateurs en ligne
-        socket.on('onlineUsers', (users) => {
-            setOnlineUsers(users);
-        });
+        // Écouter l'historique des messages
+        const handleChatHistory = (history) => {
+            setMessages(history || []);
+        };
 
-        socket.on('chatMessage', (data) => {
-            console.log('Received new message:', data);
+        // Écouter la liste des utilisateurs connectés
+        const handleOnlineUsers = (users) => {
+            setOnlineUsers(users || []);
+        };
+
+        // Écouter les nouveaux messages
+        const handleChatMessage = (data) => {
             setMessages((prevMessages) => [...prevMessages, data]);
-            
-        });
+        };
 
-        // Nettoyage à la fermeture du composant
+        socket.on('chatHistory', handleChatHistory);
+        socket.on('onlineUsers', handleOnlineUsers);
+        socket.on('chatMessage', handleChatMessage);
+
+        // Nettoyage lors du changement de salon ou démontage
         return () => {
             socket.emit('leaveRoom', { room, pseudo });
-            socket.off('onlineUsers');
-            socket.off('chatMessage');
+            socket.off('chatHistory', handleChatHistory);
+            socket.off('onlineUsers', handleOnlineUsers);
+            socket.off('chatMessage', handleChatMessage);
         };
     }, [room, pseudo]);
+
+    const handleSendMessage = () => {
+        const text = inputMessage.trim();
+        if (!text) return;
+
+        socket.emit('chatMessage', {
+            pseudo: pseudo,
+            room: room,
+            message: text
+        });
+
+        setInputMessage("");
+
+        // Remet la hauteur par défaut
+        const textarea = document.querySelector('textarea');
+        if (textarea) textarea.style.height = 'auto';
+    };
 
     // Liste des salons
     const channels = [
@@ -81,8 +112,8 @@ function Chat() {
                             <button
                                 key={channel.id}
                                 onClick={() => {
-                                    setMessages([]); // Clear messages when switching channels
-                                    setRoom(channel.id)
+                                    setMessages([]);
+                                    setRoom(channel.id);
                                 }}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${isActive
                                     ? "bg-surface-elevated text-primary shadow-sm border border-surface-border"
@@ -139,41 +170,36 @@ function Chat() {
                             time={msg.createdAt}
                             user={msg.pseudo}
                             message={msg.message}
-                            isOwnMessage={msg.username === pseudo}
+                            isOwnMessage={msg.pseudo === pseudo}
                         />
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
 
                 {/* Barre de saisie de message */}
                 <div className="p-4 bg-surface-main border-t border-surface-border shrink-0">
                     <div className="relative flex items-end gap-3 max-w-4xl mx-auto w-full">
 
-                        {/* Zone de texte auto-extensible */}
-                        <div className="flex-1 bg-surface-elevated border border-surface-border rounded-lg focus-within:border-primary-blue transition-all duration-200 overflow-hidden flex items-end">
-                            <textarea
-                                className="w-full bg-transparent border-none focus:ring-0 text-on-surface font-body-md text-body-md resize-none py-3 px-4 max-h-32 min-h-[44px] outline-none"
-                                onInput={(e) => {
-                                    e.target.style.height = '';
-                                    e.target.style.height = `${e.target.scrollHeight}px`;
-                                }}
-                                placeholder="Votre message..."
-                                rows={1}
-                            />
-                        </div>
+                        {/* Zone de texte */}
+                        <textarea
+                            className="w-full bg-transparent border-none focus:ring-0 text-on-surface font-body-md text-body-md resize-none py-3 px-4 max-h-32 min-h-[44px] outline-none"
+                            value={inputMessage}
+                            onChange={(e) => setInputMessage(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendMessage();
+                                }
+                            }}
+                            placeholder="Votre message..."
+                            rows={1}
+                        />
 
                         {/* Bouton d'envoi */}
                         <button
                             type="button"
                             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors duration-150 flex-shrink-0 font-semibold cursor-pointer"
-                            onClick={() => {
-                                const textarea = document.querySelector('textarea');
-                                const message = textarea.value.trim();
-                                if (message) {
-                                    socket.emit('chatMessage', { pseudo: pseudo, room: room, message: message });
-                                    textarea.value = '';
-                                    textarea.style.height = 'auto';
-                                }
-                            }}
+                            onClick={handleSendMessage}
                         >
                             Envoyer
                         </button>
