@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+    --color-on-secondary-fixed: #002113;
+    --color-surface-border: #334155;
+    --color-surface-elevated: #1e293b;
+    --color-on-tertiary-fixed: #311400;
+    --color-primary-fixed: #d8e2ff;
+    --color-error: #ffb4ab;
+    --color-surface-container: #171f33;
+    --color-on-primary-container: #00285d;
+    --color-status-online: #10b981;
+    --color-on-surface-variant: #c2c6d6;
+    --color-surface-tint: #adc6ff;
+    --color-tertiary-container: #df7412;
+    --color-on-surface: #dae2fd;
+    --color-error-container: #93000a;
+    --color-on-tertiary-container: #461f00;
+    --color-surface-dim: #0b1326;
+    --color-surface-variant: #2d3449;
+    --color-secondary-container: #00a572;
+    --color-tertiary-fixed-dim: #ffb786;
+    --color-surface-container-low: #131b2e;
+    --color-on-error: #690005;
+    --color-background: #0b1326;
+    --color-surface-container-highest: #2d3449;
+    --color-inverse-surface: #dae2fd;
+    --color-secondary-fixed: #6ffbbe;
+    --color-tertiary-fixed: #ffdcc6;
+    --color-text-dimmed: #94a3b8;
+    --color-surface-container-lowest: #060e20;
+    --color-on-tertiary-fixed-variant: #723600;
+    --color-primary: #adc6ff;
+    --color-on-primary: #002e6a;
+    --color-inverse-on-surface: #283044;
+    --color-surface-bright: #31394d;
+    --color-surface-container-high: #222a3d;
+    --color-surface-main: #0f172a;
+    --color-surface: #0b1326;
+    --color-on-secondary: #003824;
+    --color-on-secondary-container: #00311f;
+    --color-on-background: #dae2fd;
+    --color-on-error-container: #ffdad6;
+    --color-outline: #8c909f;
+    --color-secondary: #4edea3;
+    --color-brand-emerald: #25C2A0;
+    --color-on-secondary-fixed-variant: #005236;
+    --color-on-primary-fixed-variant: #004395;
+    --color-tertiary: #ffb786;
+    --color-inverse-primary: #005ac2;
+    --color-on-primary-fixed: #001a42;
+    --color-secondary-fixed-dim: #4edea3;
+    --color-on-tertiary: #502400;
+    --color-primary-container: #4d8eff;
+    --color-outline-variant: #424754;
+    --color-primary-fixed-dim: #adc6ff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+    margin: 0;
+}

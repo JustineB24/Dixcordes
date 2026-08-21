@@ -1,0 +1,27 @@
+services:
+  # ReactJS
+  frontend:
+    container_name: frontend-dixcordes
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  # NodeJS
+  backend:
+    container_name: backend-dixcordes
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
